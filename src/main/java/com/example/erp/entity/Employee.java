@@ -20,6 +20,7 @@ public class Employee {
     @Column(nullable = false)
     private String name;
 
+    
     private String email;
 
     private String phone;
