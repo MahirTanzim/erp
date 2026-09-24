@@ -2,38 +2,39 @@ package com.example.erp.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-
-/**
- * SecurityConfig
- */
-@Configuration 
+@Configuration
 public class SecurityConfig {
 
-    @Bean 
-    public PasswordEncoder passwordEncoder(){
+    @Bean
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean 
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-        throws Exception{
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
 
-            http
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
+
+        http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-    .requestMatchers("/api/auth/**", "/api/users", "/api/employees").permitAll()
-    .anyRequest().authenticated()
-);
-            return  http.build();
+                .requestMatchers("/api/auth/**", "/api/users").permitAll()
+                .anyRequest().authenticated()
+            );
 
-        }
-
-
-
-
+        return http.build();
+    }
 }
