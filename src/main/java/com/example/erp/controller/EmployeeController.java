@@ -46,7 +46,7 @@ public class EmployeeController {
         return employeeService.getEmployeeByCode(employeeCode)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
+    }                                   
 
     // Update employee
     @PutMapping("/{id}")
