@@ -3,6 +3,7 @@ package com.example.erp.controller;
 import com.example.erp.entity.User;
 import com.example.erp.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class UserController {
     }
 
     // Create user
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public User createUser(@RequestBody User user) {
         return userService.createUser(user);

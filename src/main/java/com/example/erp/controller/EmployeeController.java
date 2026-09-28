@@ -3,6 +3,7 @@ package com.example.erp.controller;
 import com.example.erp.entity.Employee;
 import com.example.erp.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class EmployeeController {
     }
 
     // Create employee
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PostMapping
     public Employee createEmployee(@RequestBody Employee employee) {
         return employeeService.createEmployee(employee);
@@ -28,6 +30,7 @@ public class EmployeeController {
     public List<Employee> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
+  
 
     // Get employee by ID
     @GetMapping("/{id}")
@@ -49,6 +52,7 @@ public class EmployeeController {
     }                                   
 
     // Update employee
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PutMapping("/{id}")
     public ResponseEntity<Employee> updateEmployee(
             @PathVariable Long id,
@@ -68,6 +72,7 @@ public class EmployeeController {
     }
 
     // Delete employee
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
 
