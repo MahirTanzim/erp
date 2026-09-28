@@ -6,38 +6,39 @@ import java.time.LocalDate;
 /**
  * Employee
  */
-@Entity 
+@Entity
 @Table(name = "employees")
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column (unique = true, nullable = false)
+
+    @Column(unique = true, nullable = false)
     private String employeeCode;
 
     @Column(nullable = false)
     private String name;
 
-    
     private String email;
 
     private String phone;
 
-    private String department;
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
 
     private String designation;
 
     private LocalDate joiningDate;
-    public Employee(){
+
+    public Employee() {
 
     }
 
     public Employee(String employeeCode, String name, String email,
-                     String phone, String department,
-                     String designation, LocalDate joiningDate)
-    {
+            String phone, Department department,
+            String designation, LocalDate joiningDate) {
         this.employeeCode = employeeCode;
         this.name = name;
         this.email = email;
@@ -87,11 +88,11 @@ public class Employee {
         this.phone = phone;
     }
 
-    public String getDepartment() {
+    public Department getDepartment() {
         return department;
     }
 
-    public void setDepartment(String department) {
+    public void setDepartment(Department department) {
         this.department = department;
     }
 
@@ -110,5 +111,5 @@ public class Employee {
     public void setJoiningDate(LocalDate joiningDate) {
         this.joiningDate = joiningDate;
     }
-    
+
 }
