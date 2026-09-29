@@ -1,6 +1,7 @@
 package com.example.erp.controller;
 
 import com.example.erp.dto.EmployeeResponseDTO;
+import com.example.erp.dto.EmployeeRequestDTO;
 import com.example.erp.entity.Employee;
 import com.example.erp.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,14 @@ public class EmployeeController {
     // Create employee
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeService.createEmployee(employee);
+    public EmployeeResponseDTO createEmployee(
+            @RequestBody EmployeeRequestDTO request) {
+
+        Employee employee = employeeService.toEntity(request);
+
+        Employee savedEmployee = employeeService.createEmployee(employee);
+
+        return employeeService.toResponseDTO(savedEmployee);
     }
 
     // Get all employees
@@ -55,18 +62,20 @@ public class EmployeeController {
     // Update employee
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(
+    public ResponseEntity<EmployeeResponseDTO> updateEmployee(
             @PathVariable Long id,
-            @RequestBody Employee employee) {
+            @RequestBody EmployeeRequestDTO request) {
 
         return employeeService.getEmployeeById(id)
                 .map(existingEmployee -> {
 
+                    Employee employee = employeeService.toEntity(request);
                     employee.setId(id);
 
                     Employee updated = employeeService.updateEmployee(employee);
 
-                    return ResponseEntity.ok(updated);
+                    return ResponseEntity.ok(
+                            employeeService.toResponseDTO(updated));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

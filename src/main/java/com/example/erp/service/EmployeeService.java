@@ -1,6 +1,9 @@
 package com.example.erp.service;
 
+import com.example.erp.dto.EmployeeRequestDTO;
+import com.example.erp.repository.DepartmentRepository;
 import com.example.erp.dto.EmployeeResponseDTO;
+import com.example.erp.entity.Department;
 import com.example.erp.entity.Employee;
 import com.example.erp.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -12,9 +15,11 @@ import java.util.Optional;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository) {
         this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     public Employee createEmployee(Employee employee) {
@@ -68,6 +73,29 @@ public class EmployeeService {
 
         return employeeRepository.findById(id)
                 .map(this::toResponseDTO);
+    }
+
+    public Employee toEntity(EmployeeRequestDTO dto) {
+
+        Department department = null;
+
+        if (dto.getDepartmentId() != null) {
+            department = departmentRepository
+                    .findById(dto.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+        }
+
+        Employee employee = new Employee();
+
+        employee.setEmployeeCode(dto.getEmployeeCode());
+        employee.setName(dto.getName());
+        employee.setEmail(dto.getEmail());
+        employee.setPhone(dto.getPhone());
+        employee.setDepartment(department);
+        employee.setDesignation(dto.getDesignation());
+        employee.setJoiningDate(dto.getJoiningDate());
+
+        return employee;
     }
 
 }
