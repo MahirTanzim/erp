@@ -1,5 +1,6 @@
 package com.example.erp.controller;
 
+import com.example.erp.dto.EmployeeResponseDTO;
 import com.example.erp.entity.Employee;
 import com.example.erp.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
@@ -27,16 +28,16 @@ public class EmployeeController {
 
     // Get all employees
     @GetMapping
-    public List<Employee> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public List<EmployeeResponseDTO> getAllEmployees() {
+        return employeeService.getAllEmployeeDTOs();
     }
-  
 
     // Get employee by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+    public ResponseEntity<EmployeeResponseDTO> getEmployeeById(
+            @PathVariable Long id) {
 
-        return employeeService.getEmployeeById(id)
+        return employeeService.getEmployeeDTOById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -49,7 +50,7 @@ public class EmployeeController {
         return employeeService.getEmployeeByCode(employeeCode)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }                                   
+    }
 
     // Update employee
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
@@ -63,8 +64,7 @@ public class EmployeeController {
 
                     employee.setId(id);
 
-                    Employee updated =
-                            employeeService.updateEmployee(employee);
+                    Employee updated = employeeService.updateEmployee(employee);
 
                     return ResponseEntity.ok(updated);
                 })

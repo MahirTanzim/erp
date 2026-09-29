@@ -1,5 +1,6 @@
 package com.example.erp.service;
 
+import com.example.erp.dto.EmployeeResponseDTO;
 import com.example.erp.entity.Employee;
 import com.example.erp.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
@@ -39,4 +40,34 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
         employeeRepository.deleteById(id);
     }
+
+    public EmployeeResponseDTO toResponseDTO(Employee employee) {
+
+        return new EmployeeResponseDTO(
+                employee.getId(),
+                employee.getEmployeeCode(),
+                employee.getName(),
+                employee.getEmail(),
+                employee.getPhone(),
+                employee.getDepartment() != null
+                        ? employee.getDepartment().getName()
+                        : null,
+                employee.getDesignation(),
+                employee.getJoiningDate());
+    }
+
+    public List<EmployeeResponseDTO> getAllEmployeeDTOs() {
+
+        return employeeRepository.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
+    public Optional<EmployeeResponseDTO> getEmployeeDTOById(Long id) {
+
+        return employeeRepository.findById(id)
+                .map(this::toResponseDTO);
+    }
+
 }
