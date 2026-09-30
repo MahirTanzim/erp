@@ -1,15 +1,30 @@
 package com.example.erp.dto;
 
 import java.time.LocalDate;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class EmployeeRequestDTO {
 
+    @NotBlank(message = "Employee code is required")
     private String employeeCode;
+
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @Email(message = "Invalid email format")
     private String email;
+
     private String phone;
+
+    @NotNull(message = "Department is required")
     private Long departmentId;
+
+    @NotBlank(message = "Designation is required")
     private String designation;
+
+    @NotNull(message = "Joining date is required")
     private LocalDate joiningDate;
 
     public EmployeeRequestDTO() {

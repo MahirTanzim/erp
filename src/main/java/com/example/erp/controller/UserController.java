@@ -17,6 +17,7 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+    
 
     // Create user
     @PreAuthorize("hasRole('ADMIN')")

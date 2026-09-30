@@ -5,6 +5,7 @@ import com.example.erp.repository.DepartmentRepository;
 import com.example.erp.dto.EmployeeResponseDTO;
 import com.example.erp.entity.Department;
 import com.example.erp.entity.Employee;
+import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
 
@@ -82,7 +83,7 @@ public class EmployeeService {
         if (dto.getDepartmentId() != null) {
             department = departmentRepository
                     .findById(dto.getDepartmentId())
-                    .orElseThrow(() -> new RuntimeException("Department not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
         }
 
         Employee employee = new Employee();
