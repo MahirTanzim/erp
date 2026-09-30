@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.erp.dto.ProductRequestDTO;
+import com.example.erp.dto.ProductResponseDTO;
+
 import java.util.List;
 
 @RestController
@@ -21,22 +24,28 @@ public class ProductController {
     // Create product
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productService.createProduct(product);
+    public ProductResponseDTO createProduct(
+            @RequestBody ProductRequestDTO request) {
+
+        Product product = productService.toEntity(request);
+
+        Product savedProduct = productService.createProduct(product);
+
+        return productService.toResponseDTO(savedProduct);
     }
 
     // Get all products
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public List<ProductResponseDTO> getAllProducts() {
+        return productService.getAllProductDTOs();
     }
 
     // Get product by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(
+    public ResponseEntity<ProductResponseDTO> getProductById(
             @PathVariable Long id) {
 
-        return productService.getProductById(id)
+        return productService.getProductDTOById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -62,8 +71,7 @@ public class ProductController {
                 .map(existingProduct -> {
                     product.setId(id);
 
-                    Product updated =
-                            productService.updateProduct(product);
+                    Product updated = productService.updateProduct(product);
 
                     return ResponseEntity.ok(updated);
                 })
