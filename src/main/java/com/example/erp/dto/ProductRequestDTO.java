@@ -1,14 +1,27 @@
 package com.example.erp.dto;
 
 import java.math.BigDecimal;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class ProductRequestDTO {
 
-    private String productCode;
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private String unit;
+    @NotBlank(message = "Product code is required")
+private String productCode;
+
+@NotBlank(message = "Product name is required")
+private String name;
+
+private String description;
+
+@NotNull(message = "Price is required")
+@DecimalMin(value = "0.0", inclusive = false,
+        message = "Price must be greater than 0")
+private BigDecimal price;
+
+@NotBlank(message = "Unit is required")
+private String unit;
 
     public ProductRequestDTO() {
     }

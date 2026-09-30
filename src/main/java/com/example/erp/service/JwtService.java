@@ -18,7 +18,7 @@ public class JwtService {
             "my-super-secret-key-for-erp-project-2026-very-long";
 
     private final long EXPIRATION_TIME =
-            1000 * 60 * 60; // 1 hour
+            1000 * 60 * 60 * 24; // 24 hour
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(

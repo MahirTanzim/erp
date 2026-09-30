@@ -5,10 +5,9 @@ import com.example.erp.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import com.example.erp.dto.ProductRequestDTO;
 import com.example.erp.dto.ProductResponseDTO;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -25,7 +24,7 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PostMapping
     public ProductResponseDTO createProduct(
-            @RequestBody ProductRequestDTO request) {
+            @Valid @RequestBody ProductRequestDTO request) {
 
         Product product = productService.toEntity(request);
 
@@ -63,17 +62,22 @@ public class ProductController {
     // Update product
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
+
+    public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id,
-            @RequestBody Product product) {
+            @Valid @RequestBody ProductRequestDTO request) {
 
         return productService.getProductById(id)
                 .map(existingProduct -> {
+
+                    Product product = productService.toEntity(request);
+
                     product.setId(id);
 
                     Product updated = productService.updateProduct(product);
 
-                    return ResponseEntity.ok(updated);
+                    return ResponseEntity.ok(
+                            productService.toResponseDTO(updated));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
