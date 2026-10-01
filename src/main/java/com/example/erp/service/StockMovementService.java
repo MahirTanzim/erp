@@ -22,108 +22,103 @@ import java.util.List;
 @Service
 public class StockMovementService {
 
-    private final StockMovementRepository stockMovementRepository;
-    private final InventoryRepository inventoryRepository;
-    private final ProductRepository productRepository;
-    private final WarehouseRepository warehouseRepository;
+        private final StockMovementRepository stockMovementRepository;
+        private final InventoryRepository inventoryRepository;
+        private final ProductRepository productRepository;
+        private final WarehouseRepository warehouseRepository;
 
-    public StockMovementService(
-            StockMovementRepository stockMovementRepository,
-            InventoryRepository inventoryRepository,
-            ProductRepository productRepository,
-            WarehouseRepository warehouseRepository) {
+        public StockMovementService(
+                        StockMovementRepository stockMovementRepository,
+                        InventoryRepository inventoryRepository,
+                        ProductRepository productRepository,
+                        WarehouseRepository warehouseRepository) {
 
-        this.stockMovementRepository = stockMovementRepository;
-        this.inventoryRepository = inventoryRepository;
-        this.productRepository = productRepository;
-        this.warehouseRepository = warehouseRepository;
-    }
-
-    @Transactional
-    public StockMovement createMovement(
-            StockMovementRequestDTO dto) {
-
-        Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Product not found"));
-
-        Warehouse warehouse = warehouseRepository
-                .findById(dto.getWarehouseId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Warehouse not found"));
-
-        Inventory inventory = inventoryRepository
-                .findByProductIdAndWarehouseId(
-                        dto.getProductId(),
-                        dto.getWarehouseId())
-                .orElse(null);
-
-        // If inventory doesn't exist, create it
-        if (inventory == null) {
-            inventory = new Inventory();
-            inventory.setProduct(product);
-            inventory.setWarehouse(warehouse);
-            inventory.setQuantity(BigDecimal.ZERO);
+                this.stockMovementRepository = stockMovementRepository;
+                this.inventoryRepository = inventoryRepository;
+                this.productRepository = productRepository;
+                this.warehouseRepository = warehouseRepository;
         }
 
-        BigDecimal currentQuantity = inventory.getQuantity();
-        BigDecimal movementQuantity = dto.getQuantity();
+        @Transactional
+        public StockMovement createMovement(
+                        StockMovementRequestDTO dto) {
 
-        if (dto.getType() == MovementType.IN) {
+                Product product = productRepository.findById(dto.getProductId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Product not found"));
 
-            inventory.setQuantity(
-                    currentQuantity.add(movementQuantity)
-            );
+                Warehouse warehouse = warehouseRepository
+                                .findById(dto.getWarehouseId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Warehouse not found"));
 
-        } else if (dto.getType() == MovementType.OUT) {
+                Inventory inventory = inventoryRepository
+                                .findByProductIdAndWarehouseId(
+                                                dto.getProductId(),
+                                                dto.getWarehouseId())
+                                .orElse(null);
 
-            if (currentQuantity.compareTo(movementQuantity) < 0) {
-                throw new IllegalArgumentException(
-                        "Insufficient stock");
-            }
+                // If inventory doesn't exist, create it
+                if (inventory == null) {
+                        inventory = new Inventory();
+                        inventory.setProduct(product);
+                        inventory.setWarehouse(warehouse);
+                        inventory.setQuantity(BigDecimal.ZERO);
+                }
 
-            inventory.setQuantity(
-                    currentQuantity.subtract(movementQuantity)
-            );
+                BigDecimal currentQuantity = inventory.getQuantity();
+                BigDecimal movementQuantity = dto.getQuantity();
+
+                if (dto.getType() == MovementType.IN) {
+
+                        inventory.setQuantity(
+                                        currentQuantity.add(movementQuantity));
+
+                } else if (dto.getType() == MovementType.OUT) {
+
+                        if (currentQuantity.compareTo(movementQuantity) < 0) {
+                                throw new IllegalArgumentException(
+                                                "Insufficient stock");
+                        }
+
+                        inventory.setQuantity(
+                                        currentQuantity.subtract(movementQuantity));
+                }
+
+                inventoryRepository.save(inventory);
+
+                StockMovement movement = new StockMovement();
+
+                movement.setProduct(product);
+                movement.setWarehouse(warehouse);
+                movement.setQuantity(movementQuantity);
+                movement.setType(dto.getType());
+                movement.setReference(dto.getReference());
+                movement.setMovementDate(LocalDateTime.now());
+
+                return stockMovementRepository.save(movement);
         }
 
-        inventoryRepository.save(inventory);
+        public List<StockMovementResponseDTO> getAllMovements() {
 
-        StockMovement movement = new StockMovement();
+                return stockMovementRepository.findAll()
+                                .stream()
+                                .map(this::toResponseDTO)
+                                .toList();
+        }
 
-        movement.setProduct(product);
-        movement.setWarehouse(warehouse);
-        movement.setQuantity(movementQuantity);
-        movement.setType(dto.getType());
-        movement.setReference(dto.getReference());
-        movement.setMovementDate(LocalDateTime.now());
+        public StockMovementResponseDTO toResponseDTO(
+                        StockMovement movement) {
 
-        return stockMovementRepository.save(movement);
-    }
-
-    public List<StockMovementResponseDTO> getAllMovements() {
-
-        return stockMovementRepository.findAll()
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
-    }
-
-    public StockMovementResponseDTO toResponseDTO(
-            StockMovement movement) {
-
-        return new StockMovementResponseDTO(
-                movement.getId(),
-                movement.getProduct().getId(),
-                movement.getProduct().getName(),
-                movement.getWarehouse().getId(),
-                movement.getWarehouse().getName(),
-                movement.getQuantity(),
-                movement.getType(),
-                movement.getReference(),
-                movement.getMovementDate()
-        );
-    }
+                return new StockMovementResponseDTO(
+                                movement.getId(),
+                                movement.getProduct().getId(),
+                                movement.getProduct().getName(),
+                                movement.getWarehouse().getId(),
+                                movement.getWarehouse().getName(),
+                                movement.getQuantity(),
+                                movement.getType(),
+                                movement.getReference(),
+                                movement.getMovementDate());
+        }
 }

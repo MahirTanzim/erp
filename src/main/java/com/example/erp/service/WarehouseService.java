@@ -67,8 +67,7 @@ public class WarehouseService {
                 warehouse.getWarehouseCode(),
                 warehouse.getName(),
                 warehouse.getLocation(),
-                warehouse.getDescription()
-        );
+                warehouse.getDescription());
     }
 
     public List<WarehouseResponseDTO> getAllWarehouseDTOs() {

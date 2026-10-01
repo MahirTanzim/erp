@@ -56,8 +56,7 @@ public class DepartmentController {
 
                     department.setId(id);
 
-                    Department updated =
-                            departmentService.updateDepartment(department);
+                    Department updated = departmentService.updateDepartment(department);
 
                     return ResponseEntity.ok(updated);
                 })

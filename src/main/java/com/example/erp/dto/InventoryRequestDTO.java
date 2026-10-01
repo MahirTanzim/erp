@@ -14,11 +14,7 @@ public class InventoryRequestDTO {
     private Long warehouseId;
 
     @NotNull(message = "Quantity is required")
-    @DecimalMin(
-        value = "0.0",
-        inclusive = false,
-        message = "Quantity must be greater than 0"
-    )
+    @DecimalMin(value = "0.0", inclusive = false, message = "Quantity must be greater than 0")
     private BigDecimal quantity;
 
     public InventoryRequestDTO() {

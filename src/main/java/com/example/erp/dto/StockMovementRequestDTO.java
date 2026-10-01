@@ -15,11 +15,7 @@ public class StockMovementRequestDTO {
     private Long warehouseId;
 
     @NotNull(message = "Quantity is required")
-    @DecimalMin(
-        value = "0.0",
-        inclusive = false,
-        message = "Quantity must be greater than 0"
-    )           
+    @DecimalMin(value = "0.0", inclusive = false, message = "Quantity must be greater than 0")
     private BigDecimal quantity;
 
     @NotNull(message = "Movement type is required")

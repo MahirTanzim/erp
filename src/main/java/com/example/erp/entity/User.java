@@ -1,6 +1,5 @@
 package com.example.erp.entity;
 
-
 import jakarta.persistence.*;
 
 @Entity
@@ -10,35 +9,34 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(unique = true, nullable = false)
     private String username;
 
-
     @Column(nullable = false)
     private String password;
-
 
     @Column(unique = true, nullable = false)
     private String email;
     @Column(nullable = false)
     private String role;
 
-    @OneToOne 
+    @OneToOne
     @JoinColumn(name = "employee_id", unique = true)
     private Employee employee;
 
-    public User(){
+    public User() {
 
     }
+
     public User(String username, String password, String email,
-                String role, Employee employee){
+            String role, Employee employee) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.role = role;
-        this.employee = employee; 
+        this.employee = employee;
     }
+
     public Long getId() {
         return id;
     }
@@ -86,5 +84,5 @@ public class User {
     public void setEmployee(Employee employee) {
         this.employee = employee;
     }
-    
+
 }

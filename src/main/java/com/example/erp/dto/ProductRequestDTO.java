@@ -8,20 +8,19 @@ import jakarta.validation.constraints.NotNull;
 public class ProductRequestDTO {
 
     @NotBlank(message = "Product code is required")
-private String productCode;
+    private String productCode;
 
-@NotBlank(message = "Product name is required")
-private String name;
+    @NotBlank(message = "Product name is required")
+    private String name;
 
-private String description;
+    private String description;
 
-@NotNull(message = "Price is required")
-@DecimalMin(value = "0.0", inclusive = false,
-        message = "Price must be greater than 0")
-private BigDecimal price;
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    private BigDecimal price;
 
-@NotBlank(message = "Unit is required")
-private String unit;
+    @NotBlank(message = "Unit is required")
+    private String unit;
 
     public ProductRequestDTO() {
     }

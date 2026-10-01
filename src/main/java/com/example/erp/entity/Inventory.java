@@ -4,12 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(
-    name = "inventory",
-    uniqueConstraints = @UniqueConstraint(
-        columnNames = {"product_id", "warehouse_id"}
-    )
-)
+@Table(name = "inventory", uniqueConstraints = @UniqueConstraint(columnNames = { "product_id", "warehouse_id" }))
 public class Inventory {
 
     @Id
@@ -72,5 +67,3 @@ public class Inventory {
         this.quantity = quantity;
     }
 }
-
-

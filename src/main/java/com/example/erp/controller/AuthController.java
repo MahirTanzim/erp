@@ -10,33 +10,26 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+        private final AuthenticationManager authenticationManager;
+        private final JwtService jwtService;
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
+        public AuthController(AuthenticationManager authenticationManager, JwtService jwtService) {
+                this.authenticationManager = authenticationManager;
+                this.jwtService = jwtService;
+        }
 
-    public AuthController(AuthenticationManager authenticationManager,
-                          JwtService jwtService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-    }
+        @PostMapping("/login")
+        public String login(@RequestParam String username, @RequestParam String password) {
 
-    @PostMapping("/login")
-    public String login(@RequestParam String username,
-                         @RequestParam String password) {
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                username,
+                                                password));
 
-        Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                username,
-                                password
-                        )
-                );
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        UserDetails userDetails =
-                (UserDetails) authentication.getPrincipal();
+                String token = jwtService.generateToken(userDetails);
 
-        String token = jwtService.generateToken(userDetails);
-
-        return token;
-    }
+                return token;
+        }
 }

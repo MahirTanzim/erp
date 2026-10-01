@@ -28,8 +28,7 @@ public class WarehouseController {
 
         Warehouse warehouse = warehouseService.toEntity(request);
 
-        Warehouse savedWarehouse =
-                warehouseService.createWarehouse(warehouse);
+        Warehouse savedWarehouse = warehouseService.createWarehouse(warehouse);
 
         return warehouseService.toResponseDTO(savedWarehouse);
     }
@@ -68,17 +67,14 @@ public class WarehouseController {
         return warehouseService.getWarehouseById(id)
                 .map(existingWarehouse -> {
 
-                    Warehouse warehouse =
-                            warehouseService.toEntity(request);
+                    Warehouse warehouse = warehouseService.toEntity(request);
 
                     warehouse.setId(id);
 
-                    Warehouse updated =
-                            warehouseService.updateWarehouse(warehouse);
+                    Warehouse updated = warehouseService.updateWarehouse(warehouse);
 
                     return ResponseEntity.ok(
-                            warehouseService.toResponseDTO(updated)
-                    );
+                            warehouseService.toResponseDTO(updated));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
