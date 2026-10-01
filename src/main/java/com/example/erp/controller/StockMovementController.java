@@ -27,8 +27,7 @@ public class StockMovementController {
     public StockMovementResponseDTO createMovement(
             @Valid @RequestBody StockMovementRequestDTO request) {
 
-        StockMovement movement =
-                stockMovementService.createMovement(request);
+        StockMovement movement = stockMovementService.createMovement(request);
 
         return stockMovementService.toResponseDTO(movement);
     }
@@ -37,5 +36,16 @@ public class StockMovementController {
     public List<StockMovementResponseDTO> getAllMovements() {
 
         return stockMovementService.getAllMovements();
+    }
+
+    @GetMapping("/product/{productId}/warehouse/{warehouseId}")
+    public List<StockMovementResponseDTO> getMovementsByProductAndWarehouse(
+            @PathVariable Long productId,
+            @PathVariable Long warehouseId) {
+
+        return stockMovementService
+                .getMovementsByProductAndWarehouse(
+                        productId,
+                        warehouseId);
     }
 }

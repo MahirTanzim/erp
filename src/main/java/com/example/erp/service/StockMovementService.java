@@ -7,6 +7,7 @@ import com.example.erp.entity.MovementType;
 import com.example.erp.entity.Product;
 import com.example.erp.entity.StockMovement;
 import com.example.erp.entity.Warehouse;
+import com.example.erp.exception.InsufficientStockException;
 import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.InventoryRepository;
 import com.example.erp.repository.ProductRepository;
@@ -77,7 +78,7 @@ public class StockMovementService {
                 } else if (dto.getType() == MovementType.OUT) {
 
                         if (currentQuantity.compareTo(movementQuantity) < 0) {
-                                throw new IllegalArgumentException(
+                                throw new InsufficientStockException(
                                                 "Insufficient stock");
                         }
 
@@ -120,5 +121,16 @@ public class StockMovementService {
                                 movement.getType(),
                                 movement.getReference(),
                                 movement.getMovementDate());
+        }
+
+        public List<StockMovementResponseDTO> getMovementsByProductAndWarehouse(
+                        Long productId,
+                        Long warehouseId) {
+
+                return stockMovementRepository
+                                .findByProductIdAndWarehouseId(productId, warehouseId)
+                                .stream()
+                                .map(this::toResponseDTO)
+                                .toList();
         }
 }
