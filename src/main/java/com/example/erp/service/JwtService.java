@@ -14,22 +14,19 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY =
-            "my-super-secret-key-for-erp-project-2026-very-long";
+    private final String SECRET_KEY = "my-super-secret-key-for-erp-project-2026-very-long";
 
-    private final long EXPIRATION_TIME =
-            1000 * 60 * 60 * 24; // 24 hour
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 24 hour
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(
-                SECRET_KEY.getBytes(StandardCharsets.UTF_8)
-        );
+                SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(UserDetails userDetails) {
 
-        return Jwts.builder().subject(userDetails.getUsername()).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)
-                )
+        return Jwts.builder().subject(userDetails.getUsername()).issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -71,5 +68,5 @@ public class JwtService {
 
         return claimsResolver.apply(claims);
     }
-    
+
 }
