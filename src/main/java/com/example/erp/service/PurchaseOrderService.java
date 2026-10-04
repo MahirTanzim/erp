@@ -7,11 +7,14 @@ import com.example.erp.dto.PurchaseOrderResponseDTO;
 import com.example.erp.entity.Product;
 import com.example.erp.entity.PurchaseOrder;
 import com.example.erp.entity.PurchaseOrderItem;
+import com.example.erp.entity.PurchaseOrderStatus;
 import com.example.erp.entity.Supplier;
 import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.ProductRepository;
 import com.example.erp.repository.PurchaseOrderRepository;
 import com.example.erp.repository.SupplierRepository;
+import com.example.erp.entity.Warehouse;
+import com.example.erp.repository.WarehouseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,132 +25,147 @@ import java.util.Optional;
 @Service
 public class PurchaseOrderService {
 
-    private final PurchaseOrderRepository purchaseOrderRepository;
-    private final SupplierRepository supplierRepository;
-    private final ProductRepository productRepository;
+        private final PurchaseOrderRepository purchaseOrderRepository;
+        private final SupplierRepository supplierRepository;
+        private final ProductRepository productRepository;
+        private final WarehouseRepository warehouseRepository;
 
-    public PurchaseOrderService(
-            PurchaseOrderRepository purchaseOrderRepository,
-            SupplierRepository supplierRepository,
-            ProductRepository productRepository) {
+        public PurchaseOrderService(
+                        PurchaseOrderRepository purchaseOrderRepository,
+                        SupplierRepository supplierRepository,
+                        ProductRepository productRepository, WarehouseRepository warehouseRepository) {
 
-        this.purchaseOrderRepository = purchaseOrderRepository;
-        this.supplierRepository = supplierRepository;
-        this.productRepository = productRepository;
-    }
-
-    @Transactional
-    public PurchaseOrder createPurchaseOrder(
-            PurchaseOrderRequestDTO dto) {
-
-        if (purchaseOrderRepository
-                .existsByOrderNumber(dto.getOrderNumber())) {
-
-            throw new IllegalArgumentException(
-                    "Order number already exists");
+                this.purchaseOrderRepository = purchaseOrderRepository;
+                this.supplierRepository = supplierRepository;
+                this.productRepository = productRepository;
+                this.warehouseRepository = warehouseRepository;
         }
 
-        Supplier supplier = supplierRepository
-                .findById(dto.getSupplierId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Supplier not found"));
+        @Transactional
+        public PurchaseOrder createPurchaseOrder(
+                        PurchaseOrderRequestDTO dto) {
 
-        PurchaseOrder purchaseOrder = new PurchaseOrder();
+                if (purchaseOrderRepository
+                                .existsByOrderNumber(dto.getOrderNumber())) {
 
-        purchaseOrder.setOrderNumber(dto.getOrderNumber());
-        purchaseOrder.setSupplier(supplier);
-        purchaseOrder.setOrderDate(dto.getOrderDate());
-        purchaseOrder.setStatus(dto.getStatus());
+                        throw new IllegalArgumentException(
+                                        "Order number already exists");
+                }
 
-        BigDecimal totalAmount = BigDecimal.ZERO;
+                Supplier supplier = supplierRepository
+                                .findById(dto.getSupplierId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Supplier not found"));
 
-        for (PurchaseOrderItemRequestDTO itemDTO : dto.getItems()) {
+                Warehouse warehouse = warehouseRepository
+                                .findById(dto.getWarehouseId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Warehouse not found"));
 
-            Product product = productRepository
-                    .findById(itemDTO.getProductId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "Product not found: "
-                                            + itemDTO.getProductId()));
+                PurchaseOrder purchaseOrder = new PurchaseOrder();
 
-            BigDecimal totalPrice =
-                    itemDTO.getQuantity()
-                            .multiply(itemDTO.getUnitPrice());
+                purchaseOrder.setOrderNumber(dto.getOrderNumber());
+                purchaseOrder.setSupplier(supplier);
+                purchaseOrder.setWarehouse(warehouse);
+                purchaseOrder.setOrderDate(dto.getOrderDate());
+                purchaseOrder.setStatus(dto.getStatus());
 
-            PurchaseOrderItem item = new PurchaseOrderItem();
+                BigDecimal totalAmount = BigDecimal.ZERO;
 
-            item.setPurchaseOrder(purchaseOrder);
-            item.setProduct(product);
-            item.setQuantity(itemDTO.getQuantity());
-            item.setUnitPrice(itemDTO.getUnitPrice());
-            item.setTotalPrice(totalPrice);
+                for (PurchaseOrderItemRequestDTO itemDTO : dto.getItems()) {
 
-            purchaseOrder.getItems().add(item);
+                        Product product = productRepository
+                                        .findById(itemDTO.getProductId())
+                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                        "Product not found: "
+                                                                        + itemDTO.getProductId()));
 
-            totalAmount = totalAmount.add(totalPrice);
+                        BigDecimal totalPrice = itemDTO.getQuantity()
+                                        .multiply(itemDTO.getUnitPrice());
+
+                        PurchaseOrderItem item = new PurchaseOrderItem();
+
+                        item.setPurchaseOrder(purchaseOrder);
+                        item.setProduct(product);
+                        item.setQuantity(itemDTO.getQuantity());
+                        item.setUnitPrice(itemDTO.getUnitPrice());
+                        item.setTotalPrice(totalPrice);
+
+                        purchaseOrder.getItems().add(item);
+
+                        totalAmount = totalAmount.add(totalPrice);
+                }
+
+                purchaseOrder.setTotalAmount(totalAmount);
+
+                return purchaseOrderRepository.save(purchaseOrder);
         }
 
-        purchaseOrder.setTotalAmount(totalAmount);
+        public List<PurchaseOrder> getAllPurchaseOrders() {
+                return purchaseOrderRepository.findAll();
+        }
 
-        return purchaseOrderRepository.save(purchaseOrder);
-    }
+        public Optional<PurchaseOrder> getPurchaseOrderById(Long id) {
+                return purchaseOrderRepository.findById(id);
+        }
 
-    public List<PurchaseOrder> getAllPurchaseOrders() {
-        return purchaseOrderRepository.findAll();
-    }
+        public Optional<PurchaseOrder> getPurchaseOrderByOrderNumber(
+                        String orderNumber) {
 
-    public Optional<PurchaseOrder> getPurchaseOrderById(Long id) {
-        return purchaseOrderRepository.findById(id);
-    }
+                return purchaseOrderRepository
+                                .findByOrderNumber(orderNumber);
+        }
 
-    public Optional<PurchaseOrder> getPurchaseOrderByOrderNumber(
-            String orderNumber) {
+        public PurchaseOrderResponseDTO toResponseDTO(
+                        PurchaseOrder purchaseOrder) {
 
-        return purchaseOrderRepository
-                .findByOrderNumber(orderNumber);
-    }
+                List<PurchaseOrderItemResponseDTO> itemDTOs = purchaseOrder.getItems()
+                                .stream()
+                                .map(item -> new PurchaseOrderItemResponseDTO(
+                                                item.getId(),
+                                                item.getProduct().getId(),
+                                                item.getProduct().getName(),
+                                                item.getQuantity(),
+                                                item.getUnitPrice(),
+                                                item.getTotalPrice()))
+                                .toList();
 
-    public PurchaseOrderResponseDTO toResponseDTO(
-            PurchaseOrder purchaseOrder) {
+                return new PurchaseOrderResponseDTO(
+                                purchaseOrder.getId(),
+                                purchaseOrder.getOrderNumber(),
+                                purchaseOrder.getSupplier().getId(),
+                                purchaseOrder.getSupplier().getName(),
+                                purchaseOrder.getOrderDate(),
+                                purchaseOrder.getStatus(),
+                                purchaseOrder.getTotalAmount(),
+                                itemDTOs);
+        }
 
-        List<PurchaseOrderItemResponseDTO> itemDTOs =
-                purchaseOrder.getItems()
-                        .stream()
-                        .map(item -> new PurchaseOrderItemResponseDTO(
-                                item.getId(),
-                                item.getProduct().getId(),
-                                item.getProduct().getName(),
-                                item.getQuantity(),
-                                item.getUnitPrice(),
-                                item.getTotalPrice()
-                        ))
-                        .toList();
+        public List<PurchaseOrderResponseDTO> getAllPurchaseOrderDTOs() {
 
-        return new PurchaseOrderResponseDTO(
-                purchaseOrder.getId(),
-                purchaseOrder.getOrderNumber(),
-                purchaseOrder.getSupplier().getId(),
-                purchaseOrder.getSupplier().getName(),
-                purchaseOrder.getOrderDate(),
-                purchaseOrder.getStatus(),
-                purchaseOrder.getTotalAmount(),
-                itemDTOs
-        );
-    }
+                return purchaseOrderRepository.findAll()
+                                .stream()
+                                .map(this::toResponseDTO)
+                                .toList();
+        }
 
-    public List<PurchaseOrderResponseDTO> getAllPurchaseOrderDTOs() {
+        public Optional<PurchaseOrderResponseDTO> getPurchaseOrderDTOById(
+                        Long id) {
 
-        return purchaseOrderRepository.findAll()
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
-    }
+                return purchaseOrderRepository.findById(id)
+                                .map(this::toResponseDTO);
+        }
 
-    public Optional<PurchaseOrderResponseDTO> getPurchaseOrderDTOById(
-            Long id) {
+        public PurchaseOrder updateStatus(Long id, PurchaseOrderStatus status) {
 
-        return purchaseOrderRepository.findById(id)
-                .map(this::toResponseDTO);
-    }
+                PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Purchase order not found"));
+
+                purchaseOrder.setStatus(status);
+
+                return purchaseOrderRepository.save(purchaseOrder);
+        }
+        
+
 }

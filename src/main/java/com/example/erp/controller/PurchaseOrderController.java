@@ -3,6 +3,7 @@ package com.example.erp.controller;
 import com.example.erp.dto.PurchaseOrderRequestDTO;
 import com.example.erp.dto.PurchaseOrderResponseDTO;
 import com.example.erp.entity.PurchaseOrder;
+import com.example.erp.entity.PurchaseOrderStatus;
 import com.example.erp.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +29,7 @@ public class PurchaseOrderController {
     public PurchaseOrderResponseDTO createPurchaseOrder(
             @Valid @RequestBody PurchaseOrderRequestDTO request) {
 
-        PurchaseOrder purchaseOrder =
-                purchaseOrderService.createPurchaseOrder(request);
+        PurchaseOrder purchaseOrder = purchaseOrderService.createPurchaseOrder(request);
 
         return purchaseOrderService.toResponseDTO(purchaseOrder);
     }
@@ -51,14 +51,25 @@ public class PurchaseOrderController {
     }
 
     @GetMapping("/number/{orderNumber}")
-    public ResponseEntity<PurchaseOrderResponseDTO>
-            getPurchaseOrderByOrderNumber(
-                    @PathVariable String orderNumber) {
+    public ResponseEntity<PurchaseOrderResponseDTO> getPurchaseOrderByOrderNumber(
+            @PathVariable String orderNumber) {
 
         return purchaseOrderService
                 .getPurchaseOrderByOrderNumber(orderNumber)
                 .map(purchaseOrderService::toResponseDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<PurchaseOrderResponseDTO> updateStatus(
+            @PathVariable Long id,
+            @RequestParam PurchaseOrderStatus status) {
+
+        PurchaseOrder purchaseOrder = purchaseOrderService.updateStatus(id, status);
+
+        return ResponseEntity.ok(
+                purchaseOrderService.toResponseDTO(purchaseOrder));
     }
 }

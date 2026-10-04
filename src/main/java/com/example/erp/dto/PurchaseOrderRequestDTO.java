@@ -27,18 +27,23 @@ public class PurchaseOrderRequestDTO {
     @Valid
     private List<PurchaseOrderItemRequestDTO> items;
 
+    @NotNull(message = "Warehouse ID is required")
+    private Long warehouseId;
+
     public PurchaseOrderRequestDTO() {
     }
 
     public PurchaseOrderRequestDTO(
             String orderNumber,
             Long supplierId,
+            Long warehouseId,
             LocalDate orderDate,
             PurchaseOrderStatus status,
             List<PurchaseOrderItemRequestDTO> items) {
 
         this.orderNumber = orderNumber;
         this.supplierId = supplierId;
+        this.warehouseId = warehouseId;
         this.orderDate = orderDate;
         this.status = status;
         this.items = items;
@@ -62,5 +67,9 @@ public class PurchaseOrderRequestDTO {
 
     public List<PurchaseOrderItemRequestDTO> getItems() {
         return items;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
     }
 }

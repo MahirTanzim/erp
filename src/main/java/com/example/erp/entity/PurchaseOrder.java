@@ -22,6 +22,10 @@ public class PurchaseOrder {
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
+    @ManyToOne
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    private Warehouse warehouse;
+
     @Column(nullable = false)
     private LocalDate orderDate;
 
@@ -32,11 +36,7 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    @OneToMany(
-            mappedBy = "purchaseOrder",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseOrderItem> items = new ArrayList<>();
 
     public PurchaseOrder() {
@@ -45,11 +45,13 @@ public class PurchaseOrder {
     public PurchaseOrder(
             String orderNumber,
             Supplier supplier,
+            Warehouse warehouse,
             LocalDate orderDate,
             PurchaseOrderStatus status) {
 
         this.orderNumber = orderNumber;
         this.supplier = supplier;
+        this.warehouse = warehouse;
         this.orderDate = orderDate;
         this.status = status;
     }
@@ -108,5 +110,13 @@ public class PurchaseOrder {
 
     public void setItems(List<PurchaseOrderItem> items) {
         this.items = items;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }
