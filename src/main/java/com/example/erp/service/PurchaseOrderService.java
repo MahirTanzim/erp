@@ -135,6 +135,8 @@ public class PurchaseOrderService {
                                 purchaseOrder.getOrderNumber(),
                                 purchaseOrder.getSupplier().getId(),
                                 purchaseOrder.getSupplier().getName(),
+                                purchaseOrder.getWarehouse().getId(),
+                                purchaseOrder.getWarehouse().getName(),
                                 purchaseOrder.getOrderDate(),
                                 purchaseOrder.getStatus(),
                                 purchaseOrder.getTotalAmount(),
@@ -166,6 +168,5 @@ public class PurchaseOrderService {
 
                 return purchaseOrderRepository.save(purchaseOrder);
         }
-        
 
 }

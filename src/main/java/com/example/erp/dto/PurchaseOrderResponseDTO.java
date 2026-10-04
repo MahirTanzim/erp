@@ -14,6 +14,9 @@ public class PurchaseOrderResponseDTO {
     private Long supplierId;
     private String supplierName;
 
+    private Long warehouseId;
+    private String warehouseName;
+
     private LocalDate orderDate;
     private PurchaseOrderStatus status;
     private BigDecimal totalAmount;
@@ -28,6 +31,8 @@ public class PurchaseOrderResponseDTO {
             String orderNumber,
             Long supplierId,
             String supplierName,
+            Long warehouseId,
+            String warehouseName,
             LocalDate orderDate,
             PurchaseOrderStatus status,
             BigDecimal totalAmount,
@@ -37,6 +42,8 @@ public class PurchaseOrderResponseDTO {
         this.orderNumber = orderNumber;
         this.supplierId = supplierId;
         this.supplierName = supplierName;
+        this.warehouseId = warehouseId;
+        this.warehouseName = warehouseName;
         this.orderDate = orderDate;
         this.status = status;
         this.totalAmount = totalAmount;
@@ -57,6 +64,14 @@ public class PurchaseOrderResponseDTO {
 
     public String getSupplierName() {
         return supplierName;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
     }
 
     public LocalDate getOrderDate() {
