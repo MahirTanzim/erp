@@ -14,6 +14,10 @@ import com.example.erp.repository.CustomerRepository;
 import com.example.erp.repository.ProductRepository;
 import com.example.erp.repository.SalesOrderRepository;
 import com.example.erp.repository.WarehouseRepository;
+import com.example.erp.entity.MovementType;
+import com.example.erp.entity.SalesOrderStatus;
+import com.example.erp.dto.StockMovementRequestDTO;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,17 +32,21 @@ public class SalesOrderService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
+    private final StockMovementService stockMovementService;
 
     public SalesOrderService(
             SalesOrderRepository salesOrderRepository,
             CustomerRepository customerRepository,
             ProductRepository productRepository,
-            WarehouseRepository warehouseRepository) {
+            WarehouseRepository warehouseRepository,
+            StockMovementService stockMovementService) {
 
         this.salesOrderRepository = salesOrderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.warehouseRepository = warehouseRepository;
+        this.stockMovementService = stockMovementService;
+
     }
 
     @Transactional
@@ -164,4 +172,58 @@ public class SalesOrderService {
         return salesOrderRepository.findById(id)
                 .map(this::toResponseDTO);
     }
+
+    @Transactional
+public SalesOrder updateStatus(
+        Long id,
+        SalesOrderStatus status) {
+
+    SalesOrder salesOrder =
+            salesOrderRepository.findById(id)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Sales order not found"));
+
+    if (salesOrder.getStatus() == SalesOrderStatus.DELIVERED) {
+        throw new IllegalArgumentException(
+                "A delivered sales order cannot change status");
+    }
+
+    if (salesOrder.getStatus() == SalesOrderStatus.CANCELLED) {
+        throw new IllegalArgumentException(
+                "A cancelled sales order cannot change status");
+    }
+
+    // Deduct stock only when changing to CONFIRMED
+    if (status == SalesOrderStatus.CONFIRMED
+            && salesOrder.getStatus() != SalesOrderStatus.CONFIRMED) {
+
+        for (SalesOrderItem item : salesOrder.getItems()) {
+
+            StockMovementRequestDTO movementDTO =
+                    new StockMovementRequestDTO();
+
+            movementDTO.setProductId(
+                    item.getProduct().getId());
+
+            movementDTO.setWarehouseId(
+                    salesOrder.getWarehouse().getId());
+
+            movementDTO.setQuantity(
+                    item.getQuantity());
+
+            movementDTO.setType(MovementType.OUT);
+
+            movementDTO.setReference(
+                    "Sales Order: "
+                            + salesOrder.getOrderNumber());
+
+            stockMovementService.createMovement(movementDTO);
+        }
+    }
+
+    salesOrder.setStatus(status);
+
+    return salesOrderRepository.save(salesOrder);
+}
 }

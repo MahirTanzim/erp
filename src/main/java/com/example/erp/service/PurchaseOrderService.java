@@ -15,11 +15,10 @@ import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.ProductRepository;
 import com.example.erp.repository.PurchaseOrderRepository;
 import com.example.erp.repository.SupplierRepository;
-import com.example.erp.service.StockMovementService;
 import com.example.erp.entity.Warehouse;
 import com.example.erp.repository.WarehouseRepository;
-import com.example.erp.dto.StockMovementRequestDTO;
-import com.example.erp.entity.MovementType;
+
+
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -4,6 +4,7 @@ import com.example.erp.dto.SalesOrderRequestDTO;
 import com.example.erp.dto.SalesOrderResponseDTO;
 import com.example.erp.entity.SalesOrder;
 import com.example.erp.service.SalesOrderService;
+import com.example.erp.entity.SalesOrderStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,8 +27,7 @@ public class SalesOrderController {
     public SalesOrderResponseDTO createSalesOrder(
             @Valid @RequestBody SalesOrderRequestDTO request) {
 
-        SalesOrder salesOrder =
-                salesOrderService.createSalesOrder(request);
+        SalesOrder salesOrder = salesOrderService.createSalesOrder(request);
 
         return salesOrderService.toResponseDTO(salesOrder);
     }
@@ -57,5 +57,17 @@ public class SalesOrderController {
                 .map(salesOrderService::toResponseDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<SalesOrderResponseDTO> updateStatus(
+            @PathVariable Long id,
+            @RequestParam SalesOrderStatus status) {
+
+        SalesOrder salesOrder = salesOrderService.updateStatus(id, status);
+
+        return ResponseEntity.ok(
+                salesOrderService.toResponseDTO(salesOrder));
     }
 }
