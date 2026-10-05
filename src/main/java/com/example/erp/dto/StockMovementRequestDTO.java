@@ -59,4 +59,23 @@ public class StockMovementRequestDTO {
     public String getReference() {
         return reference;
     }
+    public void setProductId(Long productId) {
+    this.productId = productId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+    
+    public void setQuantity(BigDecimal quantity) {
+        this.quantity = quantity;
+    }
+    
+    public void setType(MovementType type) {
+        this.type = type;
+    }
+    
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
 }

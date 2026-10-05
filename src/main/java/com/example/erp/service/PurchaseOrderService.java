@@ -4,6 +4,8 @@ import com.example.erp.dto.PurchaseOrderItemRequestDTO;
 import com.example.erp.dto.PurchaseOrderItemResponseDTO;
 import com.example.erp.dto.PurchaseOrderRequestDTO;
 import com.example.erp.dto.PurchaseOrderResponseDTO;
+import com.example.erp.dto.StockMovementRequestDTO;
+import com.example.erp.entity.MovementType;
 import com.example.erp.entity.Product;
 import com.example.erp.entity.PurchaseOrder;
 import com.example.erp.entity.PurchaseOrderItem;
@@ -13,8 +15,12 @@ import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.ProductRepository;
 import com.example.erp.repository.PurchaseOrderRepository;
 import com.example.erp.repository.SupplierRepository;
+import com.example.erp.service.StockMovementService;
 import com.example.erp.entity.Warehouse;
 import com.example.erp.repository.WarehouseRepository;
+import com.example.erp.dto.StockMovementRequestDTO;
+import com.example.erp.entity.MovementType;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,16 +35,20 @@ public class PurchaseOrderService {
         private final SupplierRepository supplierRepository;
         private final ProductRepository productRepository;
         private final WarehouseRepository warehouseRepository;
+        private final StockMovementService stockMovementService;
 
         public PurchaseOrderService(
                         PurchaseOrderRepository purchaseOrderRepository,
                         SupplierRepository supplierRepository,
-                        ProductRepository productRepository, WarehouseRepository warehouseRepository) {
+                        ProductRepository productRepository,
+                        WarehouseRepository warehouseRepository,
+                        StockMovementService stockMovementService) {
 
                 this.purchaseOrderRepository = purchaseOrderRepository;
                 this.supplierRepository = supplierRepository;
                 this.productRepository = productRepository;
                 this.warehouseRepository = warehouseRepository;
+                this.stockMovementService = stockMovementService;
         }
 
         @Transactional
@@ -158,11 +168,33 @@ public class PurchaseOrderService {
                                 .map(this::toResponseDTO);
         }
 
+        @Transactional
         public PurchaseOrder updateStatus(Long id, PurchaseOrderStatus status) {
 
                 PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Purchase order not found"));
+
+                // Only create stock when changing to RECEIVED
+                if (status == PurchaseOrderStatus.RECEIVED
+                                && purchaseOrder.getStatus() != PurchaseOrderStatus.RECEIVED) {
+
+                        for (PurchaseOrderItem item : purchaseOrder.getItems()) {
+
+                                StockMovementRequestDTO movementDTO = new StockMovementRequestDTO();
+
+                                movementDTO.setProductId(item.getProduct().getId());
+                                movementDTO.setWarehouseId(
+                                                purchaseOrder.getWarehouse().getId());
+                                movementDTO.setQuantity(item.getQuantity());
+                                movementDTO.setType(MovementType.IN);
+                                movementDTO.setReference(
+                                                "Purchase Order: "
+                                                                + purchaseOrder.getOrderNumber());
+
+                                stockMovementService.createMovement(movementDTO);
+                        }
+                }
 
                 purchaseOrder.setStatus(status);
 
