@@ -62,15 +62,13 @@ public class SalesOrderService {
 
         Customer customer = customerRepository
                 .findById(dto.getCustomerId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Customer not found"));
 
         Warehouse warehouse = warehouseRepository
                 .findById(dto.getWarehouseId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Warehouse not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Warehouse not found"));
 
         SalesOrder salesOrder = new SalesOrder();
 
@@ -86,14 +84,12 @@ public class SalesOrderService {
 
             Product product = productRepository
                     .findById(itemDTO.getProductId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "Product not found: "
-                                            + itemDTO.getProductId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Product not found: "
+                                    + itemDTO.getProductId()));
 
-            BigDecimal totalPrice =
-                    itemDTO.getQuantity()
-                            .multiply(itemDTO.getUnitPrice());
+            BigDecimal totalPrice = itemDTO.getQuantity()
+                    .multiply(itemDTO.getUnitPrice());
 
             SalesOrderItem item = new SalesOrderItem();
 
@@ -131,18 +127,16 @@ public class SalesOrderService {
     public SalesOrderResponseDTO toResponseDTO(
             SalesOrder salesOrder) {
 
-        List<SalesOrderItemResponseDTO> itemDTOs =
-                salesOrder.getItems()
-                        .stream()
-                        .map(item -> new SalesOrderItemResponseDTO(
-                                item.getId(),
-                                item.getProduct().getId(),
-                                item.getProduct().getName(),
-                                item.getQuantity(),
-                                item.getUnitPrice(),
-                                item.getTotalPrice()
-                        ))
-                        .toList();
+        List<SalesOrderItemResponseDTO> itemDTOs = salesOrder.getItems()
+                .stream()
+                .map(item -> new SalesOrderItemResponseDTO(
+                        item.getId(),
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getQuantity(),
+                        item.getUnitPrice(),
+                        item.getTotalPrice()))
+                .toList();
 
         return new SalesOrderResponseDTO(
                 salesOrder.getId(),
@@ -154,8 +148,7 @@ public class SalesOrderService {
                 salesOrder.getOrderDate(),
                 salesOrder.getStatus(),
                 salesOrder.getTotalAmount(),
-                itemDTOs
-        );
+                itemDTOs);
     }
 
     public List<SalesOrderResponseDTO> getAllSalesOrderDTOs() {
@@ -174,56 +167,69 @@ public class SalesOrderService {
     }
 
     @Transactional
-public SalesOrder updateStatus(
-        Long id,
-        SalesOrderStatus status) {
+    public SalesOrder updateStatus(
+            Long id,
+            SalesOrderStatus status) {
 
-    SalesOrder salesOrder =
-            salesOrderRepository.findById(id)
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "Sales order not found"));
+        SalesOrder salesOrder = salesOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Sales order not found"));
 
-    if (salesOrder.getStatus() == SalesOrderStatus.DELIVERED) {
-        throw new IllegalArgumentException(
-                "A delivered sales order cannot change status");
-    }
-
-    if (salesOrder.getStatus() == SalesOrderStatus.CANCELLED) {
-        throw new IllegalArgumentException(
-                "A cancelled sales order cannot change status");
-    }
-
-    // Deduct stock only when changing to CONFIRMED
-    if (status == SalesOrderStatus.CONFIRMED
-            && salesOrder.getStatus() != SalesOrderStatus.CONFIRMED) {
-
-        for (SalesOrderItem item : salesOrder.getItems()) {
-
-            StockMovementRequestDTO movementDTO =
-                    new StockMovementRequestDTO();
-
-            movementDTO.setProductId(
-                    item.getProduct().getId());
-
-            movementDTO.setWarehouseId(
-                    salesOrder.getWarehouse().getId());
-
-            movementDTO.setQuantity(
-                    item.getQuantity());
-
-            movementDTO.setType(MovementType.OUT);
-
-            movementDTO.setReference(
-                    "Sales Order: "
-                            + salesOrder.getOrderNumber());
-
-            stockMovementService.createMovement(movementDTO);
+        if (salesOrder.getStatus() == SalesOrderStatus.DELIVERED) {
+            throw new IllegalArgumentException(
+                    "A delivered sales order cannot change status");
         }
+
+        if (salesOrder.getStatus() == SalesOrderStatus.CANCELLED) {
+            throw new IllegalArgumentException(
+                    "A cancelled sales order cannot change status");
+        }
+
+        // Deduct stock only when changing to CONFIRMED
+        if (status == SalesOrderStatus.CONFIRMED
+                && salesOrder.getStatus() != SalesOrderStatus.CONFIRMED) {
+
+            for (SalesOrderItem item : salesOrder.getItems()) {
+
+                StockMovementRequestDTO movementDTO = new StockMovementRequestDTO();
+
+                movementDTO.setProductId(
+                        item.getProduct().getId());
+
+                movementDTO.setWarehouseId(
+                        salesOrder.getWarehouse().getId());
+
+                movementDTO.setQuantity(
+                        item.getQuantity());
+
+                movementDTO.setType(MovementType.OUT);
+
+                movementDTO.setReference(
+                        "Sales Order: "
+                                + salesOrder.getOrderNumber());
+
+                stockMovementService.createMovement(movementDTO);
+            }
+        }
+
+        if (salesOrder.getStatus() == SalesOrderStatus.DRAFT
+                && status != SalesOrderStatus.CONFIRMED
+                && status != SalesOrderStatus.CANCELLED) {
+
+            throw new IllegalArgumentException(
+                    "Draft sales order can only be confirmed or cancelled");
+        }
+
+        if (salesOrder.getStatus() == SalesOrderStatus.CONFIRMED
+                && status != SalesOrderStatus.DELIVERED
+                && status != SalesOrderStatus.CANCELLED) {
+
+            throw new IllegalArgumentException(
+                    "Confirmed sales order can only be delivered or cancelled");
+        }
+
+        salesOrder.setStatus(status);
+
+        return salesOrderRepository.save(salesOrder);
     }
-
-    salesOrder.setStatus(status);
-
-    return salesOrderRepository.save(salesOrder);
-}
 }
