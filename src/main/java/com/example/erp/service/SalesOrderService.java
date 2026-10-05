@@ -221,11 +221,10 @@ public class SalesOrderService {
         }
 
         if (salesOrder.getStatus() == SalesOrderStatus.CONFIRMED
-                && status != SalesOrderStatus.DELIVERED
-                && status != SalesOrderStatus.CANCELLED) {
+                && status != SalesOrderStatus.DELIVERED) {
 
             throw new IllegalArgumentException(
-                    "Confirmed sales order can only be delivered or cancelled");
+                    "Confirmed sales order can only be delivered");
         }
 
         salesOrder.setStatus(status);
