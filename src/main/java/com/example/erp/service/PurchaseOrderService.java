@@ -126,6 +126,8 @@ public class PurchaseOrderService {
                                 .findByOrderNumber(orderNumber);
         }
 
+        
+
         public PurchaseOrderResponseDTO toResponseDTO(
                         PurchaseOrder purchaseOrder) {
 
@@ -175,6 +177,10 @@ public class PurchaseOrderService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Purchase order not found"));
 
+                if (purchaseOrder.getStatus() == PurchaseOrderStatus.RECEIVED) {
+                        throw new IllegalArgumentException(
+                                        "A received purchase order cannot change status");
+                }
                 // Only create stock when changing to RECEIVED
                 if (status == PurchaseOrderStatus.RECEIVED
                                 && purchaseOrder.getStatus() != PurchaseOrderStatus.RECEIVED) {
@@ -200,5 +206,7 @@ public class PurchaseOrderService {
 
                 return purchaseOrderRepository.save(purchaseOrder);
         }
+
+
 
 }
