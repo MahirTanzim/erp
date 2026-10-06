@@ -58,6 +58,9 @@ public class DashboardService {
 
         BigDecimal totalOutstanding = totalInvoiceAmount.subtract(totalPaid);
 
+        BigDecimal totalSales = salesOrderRepository.getTotalSales();
+        BigDecimal totalPurchases = purchaseOrderRepository.getTotalPurchases();
+
         return new DashboardSummaryResponseDTO(
                 employeeRepository.count(),
                 productRepository.count(),
@@ -69,8 +72,8 @@ public class DashboardService {
                 salesOrderRepository.count(),
                 invoiceRepository.count(),
 
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
+                totalSales,
+                totalPurchases,
                 totalPaid,
                 totalOutstanding);
     }
