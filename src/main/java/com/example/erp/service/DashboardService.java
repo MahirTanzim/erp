@@ -2,7 +2,6 @@ package com.example.erp.service;
 
 import com.example.erp.dto.DashboardSummaryResponseDTO;
 import com.example.erp.repository.CustomerRepository;
-import com.example.erp.repository.DepartmentRepository;
 import com.example.erp.repository.EmployeeRepository;
 import com.example.erp.repository.InvoiceRepository;
 import com.example.erp.repository.ProductRepository;

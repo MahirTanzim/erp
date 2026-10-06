@@ -1,5 +1,6 @@
 package com.example.erp.service;
 
+import com.example.erp.annotation.Auditable;
 import com.example.erp.entity.User;
 import com.example.erp.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,30 +14,23 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuditLogService auditLogService;
+
 
     public UserService(UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            AuditLogService auditLogService) {
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.auditLogService = auditLogService;
+        
     }
 
+    @Auditable(action = "CREATE", entity = "USER")
     public User createUser(User user) {
 
         String encodedPassword = passwordEncoder.encode(user.getPassword());
 
         user.setPassword(encodedPassword);
 
-        User savedUser = userRepository.save(user);
-
-        auditLogService.log(
-                "CREATE",
-                "User",
-                savedUser.getId());
-
-        return savedUser;
+        return userRepository.save(user);
     }
 
     public List<User> getAllUsers() {

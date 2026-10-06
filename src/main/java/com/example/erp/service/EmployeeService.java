@@ -1,5 +1,6 @@
 package com.example.erp.service;
 
+import com.example.erp.annotation.Auditable;
 import com.example.erp.dto.EmployeeRequestDTO;
 import com.example.erp.repository.DepartmentRepository;
 import com.example.erp.dto.EmployeeResponseDTO;
@@ -17,21 +18,17 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
-    private final AuditLogService auditLogService;
 
     public EmployeeService(EmployeeRepository employeeRepository,
-            DepartmentRepository departmentRepository,
-            AuditLogService auditLogService) {
+            DepartmentRepository departmentRepository) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
-        this.auditLogService = auditLogService;
 
     }
 
+    @Auditable(action = "CREATE", entity = "Employee")
     public Employee createEmployee(Employee employee) {
-        Employee savedemployee = employeeRepository.save(employee);
-        auditLogService.log("CREATE", "Employee", savedemployee.getId());
-        return savedemployee;
+        return employeeRepository.save(employee);
     }
 
     public List<Employee> getAllEmployees() {
@@ -46,12 +43,12 @@ public class EmployeeService {
         return employeeRepository.findByEmployeeCode(employeeCode);
     }
 
+    @Auditable(action = "UPDATE", entity = "Employee")
     public Employee updateEmployee(Employee employee) {
-        Employee updatedEmployee = employeeRepository.save(employee);
-        auditLogService.log("UPDATE", "Employee", updatedEmployee.getId());
-        return updatedEmployee;
-    }
+        return employeeRepository.save(employee);
 
+    }
+    @Auditable(action = "UPDATE", entity = "Employee")
     public void deleteEmployee(Long id) {
 
         Employee employee = employeeRepository.findById(id)
@@ -59,10 +56,7 @@ public class EmployeeService {
 
         employeeRepository.delete(employee);
 
-        auditLogService.log(
-                "DELETE",
-                "Employee",
-                id);
+        
     }
 
     public EmployeeResponseDTO toResponseDTO(Employee employee) {
