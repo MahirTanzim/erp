@@ -17,14 +17,21 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final AuditLogService auditLogService;
 
-    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository,
+            DepartmentRepository departmentRepository,
+            AuditLogService auditLogService) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
+        this.auditLogService = auditLogService;
+
     }
 
     public Employee createEmployee(Employee employee) {
-        return employeeRepository.save(employee);
+        Employee savedemployee = employeeRepository.save(employee);
+        auditLogService.log("CREATE", "Employee", savedemployee.getId());
+        return savedemployee;
     }
 
     public List<Employee> getAllEmployees() {
@@ -40,11 +47,22 @@ public class EmployeeService {
     }
 
     public Employee updateEmployee(Employee employee) {
-        return employeeRepository.save(employee);
+        Employee updatedEmployee = employeeRepository.save(employee);
+        auditLogService.log("UPDATE", "Employee", updatedEmployee.getId());
+        return updatedEmployee;
     }
 
     public void deleteEmployee(Long id) {
-        employeeRepository.deleteById(id);
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        employeeRepository.delete(employee);
+
+        auditLogService.log(
+                "DELETE",
+                "Employee",
+                id);
     }
 
     public EmployeeResponseDTO toResponseDTO(Employee employee) {
