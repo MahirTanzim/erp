@@ -10,6 +10,7 @@ import com.example.erp.repository.PurchaseOrderRepository;
 import com.example.erp.repository.SalesOrderRepository;
 import com.example.erp.repository.SupplierRepository;
 import com.example.erp.repository.WarehouseRepository;
+import com.example.erp.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ public class DashboardService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final SalesOrderRepository salesOrderRepository;
     private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
 
     public DashboardService(
             EmployeeRepository employeeRepository,
@@ -34,7 +36,8 @@ public class DashboardService {
             WarehouseRepository warehouseRepository,
             PurchaseOrderRepository purchaseOrderRepository,
             SalesOrderRepository salesOrderRepository,
-            InvoiceRepository invoiceRepository) {
+            InvoiceRepository invoiceRepository,
+            PaymentRepository paymentRepository) {
 
         this.employeeRepository = employeeRepository;
         this.productRepository = productRepository;
@@ -44,9 +47,16 @@ public class DashboardService {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.invoiceRepository = invoiceRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     public DashboardSummaryResponseDTO getSummary() {
+
+        BigDecimal totalPaid = paymentRepository.getTotalPaid();
+
+        BigDecimal totalInvoiceAmount = invoiceRepository.getTotalInvoiceAmount();
+
+        BigDecimal totalOutstanding = totalInvoiceAmount.subtract(totalPaid);
 
         return new DashboardSummaryResponseDTO(
                 employeeRepository.count(),
@@ -61,8 +71,7 @@ public class DashboardService {
 
                 BigDecimal.ZERO,
                 BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO
-        );
+                totalPaid,
+                totalOutstanding);
     }
 }
