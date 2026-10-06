@@ -13,11 +13,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     public UserService(UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AuditLogService auditLogService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
     public User createUser(User user) {
@@ -26,7 +29,14 @@ public class UserService {
 
         user.setPassword(encodedPassword);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        auditLogService.log(
+                "CREATE",
+                "User",
+                savedUser.getId());
+
+        return savedUser;
     }
 
     public List<User> getAllUsers() {
