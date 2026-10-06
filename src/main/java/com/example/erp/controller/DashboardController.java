@@ -2,6 +2,8 @@ package com.example.erp.controller;
 
 import com.example.erp.dto.DashboardSummaryResponseDTO;
 import com.example.erp.service.DashboardService;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,8 +17,9 @@ public class DashboardController {
     public DashboardController(DashboardService dashboardService) {
         this.dashboardService = dashboardService;
     }
-
+    
     @GetMapping("/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public DashboardSummaryResponseDTO getSummary() {
         return dashboardService.getSummary();
     }
