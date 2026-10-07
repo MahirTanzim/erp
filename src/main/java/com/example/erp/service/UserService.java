@@ -1,6 +1,7 @@
 package com.example.erp.service;
 
 import com.example.erp.annotation.Auditable;
+import com.example.erp.dto.UserResponseDTO;
 import com.example.erp.entity.User;
 import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.UserRepository;
@@ -70,4 +71,16 @@ public class UserService {
 
         return user;
     }
+    public UserResponseDTO toResponseDTO(User user) {
+
+    return new UserResponseDTO(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole(),
+            user.getEmployee() != null
+                    ? user.getEmployee().getId()
+                    : null
+    );
+}
 }

@@ -1,5 +1,6 @@
 package com.example.erp.controller;
 
+import com.example.erp.dto.UserResponseDTO;
 import com.example.erp.entity.User;
 import com.example.erp.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +27,13 @@ public class UserController {
     }
 
     // Get all users
+
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserResponseDTO> getAllUsers() {
+        return userService.getAllUsers()
+                .stream()
+                .map(userService::toResponseDTO)
+                .toList();
     }
 
     // Get user by ID
@@ -70,7 +75,7 @@ public class UserController {
     }
 
     // Delete user
-    @PreAuthorize ("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
 
