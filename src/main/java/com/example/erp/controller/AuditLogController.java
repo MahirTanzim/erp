@@ -22,4 +22,12 @@ public class AuditLogController {
     public List<AuditLog> getAllLogs() {
         return auditLogService.getAllLogs();
     }
+
+    @GetMapping("/{entityName}/{entityId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<AuditLog> getLogsForEntity(
+            @PathVariable String entityName,
+            @PathVariable Long entityId) {
+        return auditLogService.getLogsForEntity(entityName, entityId);
+    }
 }

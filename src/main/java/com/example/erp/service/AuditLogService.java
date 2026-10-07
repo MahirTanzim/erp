@@ -36,4 +36,10 @@ public class AuditLogService {
     public List<AuditLog> getAllLogs() {
         return auditLogRepository.findAll();
     }
+
+    public List<AuditLog> getLogsForEntity(String entityName, Long entityId) {
+        return auditLogRepository.findByEntityNameAndEntityId(
+                entityName,
+                entityId);
+    }
 }
