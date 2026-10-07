@@ -2,6 +2,7 @@ package com.example.erp.service;
 
 import com.example.erp.annotation.Auditable;
 import com.example.erp.entity.User;
+import com.example.erp.exception.ResourceNotFoundException;
 import com.example.erp.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,16 +45,29 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
+    @Auditable(action = "UPDATE", entity = "USER")
     public User updateUser(User user) {
 
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        User existingUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        user.setPassword(encodedPassword);
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            user.setPassword(existingUser.getPassword());
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
 
         return userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    @Auditable(action = "DELETE", entity = "USER")
+    public User deleteUser(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        userRepository.delete(user);
+
+        return user;
     }
 }

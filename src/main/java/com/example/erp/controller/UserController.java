@@ -51,6 +51,7 @@ public class UserController {
     }
 
     // Update user
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,
@@ -69,6 +70,7 @@ public class UserController {
     }
 
     // Delete user
+    @PreAuthorize ("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
 
