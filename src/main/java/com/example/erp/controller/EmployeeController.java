@@ -51,11 +51,12 @@ public class EmployeeController {
 
     // Get employee by employee code
     @GetMapping("/code/{employeeCode}")
-    public ResponseEntity<Employee> getEmployeeByCode(
+    public ResponseEntity<EmployeeResponseDTO> getEmployeeByCode(
             @PathVariable String employeeCode) {
 
         return employeeService.getEmployeeByCode(employeeCode)
-                .map(ResponseEntity::ok)
+                .map(employee -> ResponseEntity.ok(
+                        employeeService.toResponseDTO(employee)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
