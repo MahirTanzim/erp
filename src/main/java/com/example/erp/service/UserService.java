@@ -15,12 +15,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     public UserService(UserRepository userRepository,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        
+
     }
 
     @Auditable(action = "CREATE", entity = "USER")
@@ -46,6 +45,11 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+
+        user.setPassword(encodedPassword);
+
         return userRepository.save(user);
     }
 

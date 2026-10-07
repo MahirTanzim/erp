@@ -31,9 +31,6 @@ public class EmployeeService {
         return employeeRepository.save(employee);
     }
 
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
-    }
 
     public Optional<Employee> getEmployeeById(Long id) {
         return employeeRepository.findById(id);
@@ -48,15 +45,16 @@ public class EmployeeService {
         return employeeRepository.save(employee);
 
     }
-    @Auditable(action = "UPDATE", entity = "Employee")
-    public void deleteEmployee(Long id) {
+
+    @Auditable(action = "DELETE", entity = "Employee")
+    public Employee deleteEmployee(Long id) {
 
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         employeeRepository.delete(employee);
 
-        
+        return employee;
     }
 
     public EmployeeResponseDTO toResponseDTO(Employee employee) {
