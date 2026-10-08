@@ -17,15 +17,11 @@ public class AuditAspect {
         this.auditLogService = auditLogService;
     }
 
-    @AfterReturning(
-            pointcut = "@annotation(auditable)",
-            returning = "result"
-    )
+    @AfterReturning(pointcut = "@annotation(auditable)", returning = "result")
     public void audit(
             JoinPoint joinPoint,
             Auditable auditable,
-            Object result
-    ) {
+            Object result) {
 
         Long entityId = null;
 
@@ -41,7 +37,6 @@ public class AuditAspect {
         auditLogService.log(
                 auditable.action(),
                 auditable.entity(),
-                entityId
-        );
+                entityId);
     }
 }
