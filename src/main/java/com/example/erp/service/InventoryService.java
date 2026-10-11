@@ -32,19 +32,31 @@ public class InventoryService {
         }
 
         // Create inventory
+
+        // Create inventory or update existing quantity
         public Inventory createInventory(InventoryRequestDTO dto) {
 
                 Product product = productRepository.findById(dto.getProductId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Product not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-                Warehouse warehouse = warehouseRepository.findById(
-                                dto.getWarehouseId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Warehouse not found"));
+                Warehouse warehouse = warehouseRepository.findById(dto.getWarehouseId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
+
+                Optional<Inventory> existingInventory = inventoryRepository.findByProductIdAndWarehouseId(
+                                dto.getProductId(),
+                                dto.getWarehouseId());
+
+                if (existingInventory.isPresent()) {
+                        Inventory inventory = existingInventory.get();
+
+                        // Add the incoming quantity to the existing stock
+                        inventory.setQuantity(
+                                        inventory.getQuantity().add(dto.getQuantity()));
+
+                        return inventoryRepository.save(inventory);
+                }
 
                 Inventory inventory = new Inventory();
-
                 inventory.setProduct(product);
                 inventory.setWarehouse(warehouse);
                 inventory.setQuantity(dto.getQuantity());
@@ -106,7 +118,6 @@ public class InventoryService {
 
         // Get inventory by ID as DTO
         public Optional<InventoryResponseDTO> getInventoryDTOById(Long id) {
-
                 return inventoryRepository.findById(id)
                                 .map(this::toResponseDTO);
         }
