@@ -74,7 +74,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Delete user
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
