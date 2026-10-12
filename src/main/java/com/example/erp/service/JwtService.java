@@ -1,8 +1,10 @@
+
 package com.example.erp.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,25 +16,32 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "my-super-secret-key-for-erp-project-2026-very-long";
+    private final SecretKey signingKey;
 
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 24 hour
+    private final long EXPIRATION_TIME = 1000L * 60 * 60 * 24;
 
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(
-                SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException(
+                    "JWT secret must be at least 32 bytes long");
+        }
+
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(UserDetails userDetails) {
-
-        return Jwts.builder().subject(userDetails.getUsername()).issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey())
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date())
+                .expiration(new Date(
+                        System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(signingKey)
                 .compact();
     }
 
     public String extractUsername(String token) {
-
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -47,12 +56,10 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-
         return extractExpiration(token).before(new Date());
     }
 
     private Date extractExpiration(String token) {
-
         return extractClaim(token, Claims::getExpiration);
     }
 
@@ -61,12 +68,11 @@ public class JwtService {
             Function<Claims, T> claimsResolver) {
 
         Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
         return claimsResolver.apply(claims);
     }
-
 }
