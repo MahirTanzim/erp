@@ -26,7 +26,7 @@ public class UserService {
 
     @Auditable(action = "CREATE", entity = "USER")
     public User createUser(User user) {
-
+        validateNewUser(user);
         String encodedPassword = passwordEncoder.encode(user.getPassword());
 
         user.setPassword(encodedPassword);
@@ -51,14 +51,33 @@ public class UserService {
 
         User existingUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        validateUserUpdate(user, existingUser);
 
-        if (user.getPassword() == null || user.getPassword().isBlank()) {
-            user.setPassword(existingUser.getPassword());
-        } else {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Update only fields provided in the request
+        if (user.getUsername() != null && !user.getUsername().isBlank()) {
+            existingUser.setUsername(user.getUsername());
         }
 
-        return userRepository.save(user);
+        if (user.getEmail() != null) {
+            existingUser.setEmail(user.getEmail());
+        }
+
+        if (user.getRole() != null && !user.getRole().isBlank()) {
+            existingUser.setRole(user.getRole());
+        }
+
+        // Preserve the existing password if no new password is provided
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            existingUser.setPassword(
+                    passwordEncoder.encode(user.getPassword()));
+        }
+
+        // Allow employee association to be changed when supplied
+        if (user.getEmployee() != null) {
+            existingUser.setEmployee(user.getEmployee());
+        }
+
+        return userRepository.save(existingUser);
     }
 
     @Auditable(action = "DELETE", entity = "USER")
@@ -71,16 +90,45 @@ public class UserService {
 
         return user;
     }
+
     public UserResponseDTO toResponseDTO(User user) {
 
-    return new UserResponseDTO(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole(),
-            user.getEmployee() != null
-                    ? user.getEmployee().getId()
-                    : null
-    );
-}
+        return new UserResponseDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getEmployee() != null
+                        ? user.getEmployee().getId()
+                        : null);
+    }
+
+    private void validateNewUser(User user) {
+
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+    }
+
+    private void validateUserUpdate(User user, User existingUser) {
+
+        if (user.getUsername() != null
+                && !user.getUsername().isBlank()
+                && !user.getUsername().equals(existingUser.getUsername())
+                && userRepository.findByUsername(user.getUsername()).isPresent()) {
+
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+        if (user.getEmail() != null
+                && !user.getEmail().equals(existingUser.getEmail())
+                && userRepository.findByEmail(user.getEmail()).isPresent()) {
+
+            throw new IllegalArgumentException("Email already exists");
+        }
+    }
 }
