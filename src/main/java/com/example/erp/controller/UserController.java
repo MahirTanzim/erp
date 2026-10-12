@@ -1,3 +1,4 @@
+
 package com.example.erp.controller;
 
 import com.example.erp.dto.UserResponseDTO;
@@ -22,12 +23,12 @@ public class UserController {
     // Create user
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public UserResponseDTO createUser(@RequestBody User user) {
+        User created = userService.createUser(user);
+        return userService.toResponseDTO(created);
     }
 
     // Get all users
-
     @GetMapping
     public List<UserResponseDTO> getAllUsers() {
         return userService.getAllUsers()
@@ -38,42 +39,46 @@ public class UserController {
 
     // Get user by ID
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDTO> getUserById(
+            @PathVariable Long id) {
 
         return userService.getUserById(id)
-                .map(ResponseEntity::ok)
+                .map(user -> ResponseEntity.ok(
+                        userService.toResponseDTO(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // Get user by username
     @GetMapping("/username/{username}")
-    public ResponseEntity<User> getUserByUsername(
+    public ResponseEntity<UserResponseDTO> getUserByUsername(
             @PathVariable String username) {
 
         return userService.getUserByUsername(username)
-                .map(ResponseEntity::ok)
+                .map(user -> ResponseEntity.ok(
+                        userService.toResponseDTO(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // Update user
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
             @RequestBody User user) {
 
         return userService.getUserById(id)
                 .map(existingUser -> {
-
                     user.setId(id);
 
                     User updated = userService.updateUser(user);
 
-                    return ResponseEntity.ok(updated);
+                    return ResponseEntity.ok(
+                            userService.toResponseDTO(updated));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Delete user
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
@@ -86,4 +91,4 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
-}
+}                                       
