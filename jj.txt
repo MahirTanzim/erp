@@ -1,0 +1,14 @@
+jdbc:postgresql://ep-mute-fire-b52l3swg-pooler.c-7.us-east-2.aws.neon.tech/neondb?user=neondb_owner&password=npg_YvrLcI8NJSU7&sslmode=require&channelBinding=require
+
+
+$env:DB_URL = "jdbc:postgresql://ep-mute-fire-b52l3swg-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channelBinding=require"
+$env:DB_USERNAME = "neondb_owner"
+$env:DB_PASSWORD = "npg_YvrLcI8NJSU7"
+
+
+JWT generation in powershell
+$bytes = New-Object byte[] 32
+$rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
