@@ -7,6 +7,8 @@ The backend is built with Java and Spring Boot, using PostgreSQL for persistent 
 ## Live Demo
 
 - **Backend API:** https://erp-i5vi.onrender.com
+- **Swagger UI:** https://erp-i5vi.onrender.com/swagger-ui/index.html
+- **OpenAPI JSON:** https://erp-i5vi.onrender.com/v3/api-docs
 - **Frontend Application:** https://erp-frontend.tanzimm651.workers.dev
 - **Frontend Repository:** https://github.com/MahirTanzim/erp-frontend.
 
