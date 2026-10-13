@@ -8,7 +8,7 @@ The backend is built with Java and Spring Boot, using PostgreSQL for persistent 
 
 - **Backend API:** https://erp-i5vi.onrender.com
 - **Frontend Application:** https://erp-frontend.tanzimm651.workers.dev
-- **Frontend Repository:** Add your frontend GitHub repository URL here.
+- **Frontend Repository:** https://github.com/MahirTanzim/erp-frontend.
 
 > Note: The backend is an API service, so opening the root URL in a browser may not display a user interface.
 
